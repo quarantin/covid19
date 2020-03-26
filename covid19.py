@@ -313,7 +313,7 @@ if __name__ == '__main__':
 
 	covid19_data, covid19_data_accu = parse_spreadsheet(filename)
 
-	toc, items = process(covid19_data,      log=False, debug=False)
-	#toc, items = process(covid19_data_accu, log=True)
+	toc, items = process(covid19_data,      log=False)
+	toc, items = process(covid19_data_accu, log=True)
 
 	generate_html(toc, url + filename)
