@@ -17,15 +17,15 @@ def download_spreadsheet(filename, url):
 
 def accumulate(data):
 
-	accu = {}
+	cumul = {}
 
 	for cc, country_data in data.items():
 
 		if cc == 'total':
 			continue
 
-		if cc not in accu:
-			accu[cc] = {}
+		if cc not in cumul:
+			cumul[cc] = {}
 
 		cases = 0
 		deaths = 0
@@ -35,13 +35,13 @@ def accumulate(data):
 			cases += item['cases']
 			deaths += item['deaths']
 
-			accu[cc][date] = {
+			cumul[cc][date] = {
 				'country': item['country'],
 				'cases': cases,
 				'deaths': deaths,
 			}
 
-	return accu
+	return cumul
 
 def parse_spreadsheet(filename):
 
@@ -135,9 +135,9 @@ def plot(covid19_country, covid19_data, log=False):
 	if covid19_country == 'ww':
 		plt.figure(figsize=(24.0, 9.0))
 	else:
-		plt.figure(figsize=(14.0, 9.0))
+		plt.figure(figsize=(16.0, 9.0))
 
-	plt.suptitle(log and 'Accumulated' or 'Per Day', fontsize=26)
+	plt.suptitle(log and 'Cumulative' or 'Per Day', fontsize=26)
 
 	plt.xlabel('Days', fontsize=20)
 	plt.ylabel('Count', fontsize=20)
@@ -307,9 +307,9 @@ if __name__ == '__main__':
 		print(traceback.format_exc())
 		sys.exit(0)
 
-	covid19_data, covid19_data_accu = parse_spreadsheet(filename)
+	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
 
-	toc, items = process(covid19_data,      log=False)
-	toc, items = process(covid19_data_accu, log=True)
+	toc, items = process(covid19_data,       log=False)
+	toc, items = process(covid19_data_cumul, log=True)
 
 	generate_html(toc, url + filename)
