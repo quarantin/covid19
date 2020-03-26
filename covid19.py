@@ -15,7 +15,7 @@ def download_spreadsheet(filename, url):
 	fout.write(response.content)
 	fout.close()
 
-def accumulated(data):
+def accumulate(data):
 
 	accu = {}
 
@@ -97,7 +97,7 @@ def parse_spreadsheet(filename):
 			data['total']['cases'] += cases
 			data['total']['deaths'] += deaths
 
-	return data, accumulated(data)
+	return data, accumulate(data)
 
 def plot(covid19_country, covid19_data, log=False):
 
@@ -109,13 +109,17 @@ def plot(covid19_country, covid19_data, log=False):
 	cases = []
 	deaths = []
 
+	letter = covid19_country[0].lower()
+	if not os.path.exists(letter):
+		os.mkdir(letter)
+
 	max_cases = 0
 	country_name = None
 	for date, entry in sorted(list(covid19_data.items()), key=lambda x: x[0], reverse=False):
 
 		# Ignore days with no case and no death
-		if entry['cases'] == 0 and entry['deaths'] == 0:
-			continue
+		#if entry['cases'] == 0 and entry['deaths'] == 0:
+		#	continue
 
 		if entry['cases'] > max_cases:
 			max_cases = entry['cases']
@@ -131,16 +135,20 @@ def plot(covid19_country, covid19_data, log=False):
 	if covid19_country == 'ww':
 		plt.figure(figsize=(24.0, 9.0))
 	else:
-		plt.figure(figsize=(12.0, 9.0))
+		plt.figure(figsize=(14.0, 9.0))
 
-	plt.suptitle(country_name.title(), fontsize=30)
+	plt.suptitle(log and 'Accumulated' or 'Per Day', fontsize=26)
 
 	plt.xlabel('Days', fontsize=20)
 	plt.ylabel('Count', fontsize=20)
 
 	step = 100
 	if covid19_country == 'ww':
+		step = 10000
+	elif covid19_country == 'ch':
 		step = 1000
+	elif max_cases < step:
+		step = 10
 
 	div, rem = divmod(max_cases, step)
 	limit = div * step
@@ -188,27 +196,17 @@ def plot(covid19_country, covid19_data, log=False):
 
 	plt.legend(handles=[ blue_patch, red_patch ], loc='upper left')
 
-	filename = 'images/%s.png' % covid19_country
+	filename = '%s/%s.png' % (letter, covid19_country)
 	if log is True:
 		plt.yscale('log')
-		filename = 'images/%s-log.png' % covid19_country
+		filename = '%s/%s-log.png' % (letter, covid19_country)
 
 	plt.savefig(filename)
 	#plt.show()
 	plt.close('all')
 	return filename, country_name
 
-def generate_html(toc, items, url, log=False):
-
-	github_url = 'https://github.com/quarantin/covid19'
-
-	old_name = 'index.html'
-	new_name = 'index.html.new'
-	if log:
-		old_name = 'index-log.html'
-		new_name = 'index-log.html.new'
-
-	fout = open(new_name, 'w')
+def write_html_header(fout, page_title):
 
 	fout.write('<html>\n')
 	fout.write('\t<head>\n')
@@ -218,39 +216,70 @@ def generate_html(toc, items, url, log=False):
 	fout.write('\t\t<meta http-equiv="Expires" content="0" />\n')
 	fout.write('\t</head>\n')
 	fout.write('\t<body>\n')
-	fout.write('\t\t<h1>COVID-19 Geographic Distribution Worldwide</h1>\n')
-	fout.write('\t\t<div id="info">\n')
-	if log:
-		fout.write('\t\t\t[ <a href="index.html">Normal scale</a> | <b>Logarithmic scale</b> ]</br></br>\n')
-	else:
-		fout.write('\t\t\t[ <b>Normal scale</b> | <a href="index-log.html">Logarithmic scale ]</br></br>\n')
-	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (url, url))
-	fout.write('\t\t\tCode source: <a href="%s">%s</a></br>\n' % (github_url, github_url))
-	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d'))
-	fout.write('\t\t</div><!-- div#info -->\n')
-	fout.write('\t\t<div id="toc">\n')
-	fout.write('\t\t\t<h2>Table of Content</h2>\n')
+	fout.write('\t\t<h1>%s</h1>\n' % page_title)
 
-	for code, country in toc:
-		fout.write('\t\t\t<a href="#%s">%s</a></br>\n' % (code, country))
+def write_html_footer(fout):
 
-	fout.write('\t\t</div><!-- div#toc -->\n')
-	fout.write('\t\t<div id="content">\n')
-
-	for code, country, plotfile in items:
-		fout.write('\t\t\t<div>\n')
-		fout.write('\t\t\t\t<h3 id="%s">%s</h3>\n' % (code, country))
-		fout.write('\t\t\t\t<img src="%s"/>\n' % plotfile)
-		fout.write('\t\t\t</div>\n')
-
-	fout.write('\t\t</div><!-- div#content -->\n')
 	fout.write('\t</body>\n')
 	fout.write('</html>\n')
 	fout.close()
 
-	os.rename(new_name, old_name)
+def generate_html_country(country, country_name):
 
-def process(covid19_data, log=False):
+	letter = country[0].lower()
+
+	cur_filename = '%s/%s.html'     % (letter, country)
+	tmp_filename = '%s/%s.html.new' % (letter, country)
+
+	fout = open(tmp_filename, 'w')
+
+	for_str = country != 'ww' and 'for ' or ''
+	write_html_header(fout, 'COVID-19 Geographic Distribution %s%s' % (for_str, country_name))
+
+	fout.write('\t\t<div>\n')
+	fout.write('\t\t\t<img src="%s.png"/>\n' % country)
+	fout.write('\t\t\t<img src="%s-log.png"/>\n' % country)
+	fout.write('\t\t</div>\n')
+
+	write_html_footer(fout)
+
+	os.rename(tmp_filename, cur_filename)
+
+def generate_html(toc, url):
+
+	github_url = 'https://github.com/quarantin/covid19'
+
+	cur_filename = 'index.html'
+	tmp_filename = 'index.html.new'
+
+	fout = open(tmp_filename, 'w')
+
+	write_html_header(fout, 'COVID-19 Geographic Distribution Worldwide')
+
+	fout.write('\t\t<div id="info">\n')
+	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (url, url))
+	fout.write('\t\t\tCode source: <a href="%s">%s</a></br>\n' % (github_url, github_url))
+	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d'))
+	fout.write('\t\t</div><!-- div#info -->\n')
+	fout.write('\t\t<div id="content">\n')
+	fout.write('\t\t\t<h2>Countries</h2>\n')
+
+	for code, country in toc:
+		href = '%s/%s.html' % (code[0].lower(), code)
+		fout.write('\t\t\t<a href="%s">%s</a></br>\n' % (href, country))
+		generate_html_country(code, country)
+
+	fout.write('\t\t</div><!-- div#content -->\n')
+
+	write_html_footer(fout)
+
+	os.rename(tmp_filename, cur_filename)
+
+def dummy_plot(code, data, log=False):
+	for date, item in data.items():
+		return None, item['country']
+
+def process(covid19_data, log=False, debug=False):
 
 	toc = []
 	items = []
@@ -260,25 +289,19 @@ def process(covid19_data, log=False):
 		if code == 'total':
 			continue
 
-		plotfile, country = plot(code, data, log=log)
+		plotfn = debug and dummy_plot or plot
+		plotfile, country = plotfn(code, data, log=log)
 
 		toc.append((code, country))
 
 		items.append((code, country, plotfile))
 
-	generate_html(toc, items, url + filename, log=log)
+	return toc, items
 
 if __name__ == '__main__':
 
 	url = 'https://www.ecdc.europa.eu/sites/default/files/documents/'
 	filename = 'COVID-19-geographic-disbtribution-worldwide.xlsx'
-
-	#if os.path.exists(filename):
-	#	sys.exit(0)
-
-	images_dir = 'images/'
-	if not os.path.exists(images_dir):
-		os.mkdir(images_dir)
 
 	try:
 		download_spreadsheet(filename, url)
@@ -290,5 +313,7 @@ if __name__ == '__main__':
 
 	covid19_data, covid19_data_accu = parse_spreadsheet(filename)
 
-	process(covid19_data)
-	process(covid19_data_accu, log=True)
+	toc, items = process(covid19_data,      log=False, debug=False)
+	#toc, items = process(covid19_data_accu, log=True)
+
+	generate_html(toc, url + filename)
