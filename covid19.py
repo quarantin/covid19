@@ -175,12 +175,8 @@ def plot(covid19_country, covid19_data, log=False):
 		if cases_h != 0:
 			death_rate = (deaths_h / cases_h) * 100
 
-		if abs(cases_h - deaths_h) < 50:
-			cases_repr = '%d   ' % int(cases_h)
-			deaths_repr = '   %d' % int(deaths_h)
-		else:
-			cases_repr = '%d' % int(cases_h)
-			deaths_repr = '%d' % int(deaths_h)
+		cases_repr = '%d' % int(cases_h)
+		deaths_repr = '%d' % int(deaths_h)
 
 		death_rate_repr = death_rate == -1 and '-' or '%.01f%%' % death_rate
 		if death_rate != -1 and death_rate - int(death_rate) == 0:
