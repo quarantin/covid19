@@ -245,12 +245,12 @@ def generate_html(toc, items, url, log=False):
 
 	os.rename(new_name, old_name)
 
-def process(data, log=False):
+def process(covid19_data, log=False):
 
 	toc = []
 	items = []
 
-	for code, data in covid19_data_accu.items():
+	for code, data in covid19_data.items():
 
 		if code == 'total':
 			continue
