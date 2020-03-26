@@ -277,7 +277,7 @@ def generate_html(toc, url):
 
 def dummy_plot(code, data, log=False):
 	for date, item in data.items():
-		return None, item['country']
+		return None, item['country'].replace('_', ' ')
 
 def process(covid19_data, log=False, debug=False):
 
