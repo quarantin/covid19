@@ -211,7 +211,12 @@ def generate_html(toc, items, url, log=False):
 	fout = open(new_name, 'w')
 
 	fout.write('<html>\n')
-	fout.write('\t<head></head>\n')
+	fout.write('\t<head>\n')
+	fout.write('\t\t<meta charset="UTF-8">\n')
+	fout.write('\t\t<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />\n')
+	fout.write('\t\t<meta http-equiv="Pragma" content="no-cache" />\n')
+	fout.write('\t\t<meta http-equiv="Expires" content="0" />\n')
+	fout.write('\t</head>\n')
 	fout.write('\t<body>\n')
 	fout.write('\t\t<h1>COVID-19 Geographic Distribution Worldwide</h1>\n')
 	fout.write('\t\t<div id="info">\n')
