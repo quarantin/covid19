@@ -135,7 +135,7 @@ def plot(covid19_country, covid19_data, log=False):
 	if covid19_country == 'ww':
 		plt.figure(figsize=(24.0, 9.0))
 	else:
-		plt.figure(figsize=(16.0, 9.0))
+		plt.figure(figsize=(18.0, 9.0))
 
 	plt.suptitle(log and 'Cumulative' or 'Per Day', fontsize=26)
 
