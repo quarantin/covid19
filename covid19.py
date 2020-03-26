@@ -198,7 +198,7 @@ if __name__ == '__main__':
 	import sys
 
 	url = 'https://www.ecdc.europa.eu/sites/default/files/documents/'
-	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.xlsx' % datetime.now().strftime('%Y-%m-%d')
+	filename = 'COVID-19-geographic-disbtribution-worldwide.xlsx'
 
 	if os.path.exists(filename):
 		sys.exit(0)
