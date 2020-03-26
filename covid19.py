@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import traceback
 from datetime import datetime
 
@@ -14,6 +15,34 @@ def download_spreadsheet(filename, url):
 	fout.write(response.content)
 	fout.close()
 
+def accumulated(data):
+
+	accu = {}
+
+	for cc, country_data in data.items():
+
+		if cc == 'total':
+			continue
+
+		if cc not in accu:
+			accu[cc] = {}
+
+		cases = 0
+		deaths = 0
+
+		for date, item in sorted(country_data.items(), key=lambda x: x[0]):
+
+			cases += item['cases']
+			deaths += item['deaths']
+
+			accu[cc][date] = {
+				'country': item['country'],
+				'cases': cases,
+				'deaths': deaths,
+			}
+
+	return accu
+
 def parse_spreadsheet(filename):
 
 	data = {}
@@ -25,24 +54,24 @@ def parse_spreadsheet(filename):
 		next(rows)
 		for row in rows:
 
-			day          = row[1]
-			month        = row[2]
-			year         = row[3]
-			cases        = row[4]
-			deaths       = row[5]
-			country      = row[6]
-			country_code = row[7]
+			day     = row[1]
+			month   = row[2]
+			year    = row[3]
+			cases   = row[4]
+			deaths  = row[5]
+			country = row[6]
+			cc      = row[7]
 
 			if 'ww' not in data:
 				data['ww'] = {}
 
-			country_code = country_code.lower()
-			if country_code not in data:
-				data[country_code] = {}
+			cc = cc.lower()
+			if cc not in data:
+				data[cc] = {}
 
 			date = datetime(year=int(year), month=int(month), day=int(day)).strftime('%Y-%m-%d')
-			if date not in data[country_code]:
-				data[country_code][date] = {
+			if date not in data[cc]:
+				data[cc][date] = {
 					'country': country,
 					'cases': cases,
 					'deaths': deaths,
@@ -68,9 +97,9 @@ def parse_spreadsheet(filename):
 			data['total']['cases'] += cases
 			data['total']['deaths'] += deaths
 
-	return data
+	return data, accumulated(data)
 
-def plot(covid19_country, covid19_data):
+def plot(covid19_country, covid19_data, log=False):
 
 	import matplotlib as mpl
 	import matplotlib.pyplot as plt
@@ -97,7 +126,7 @@ def plot(covid19_country, covid19_data):
 		if not country_name:
 			country_name = entry['country'].replace('_', ' ')
 
-	print('Parsing %s...' % country_name, file=sys.stdout)
+	print("Plotting %s" % country_name, file=sys.stdout)
 	mpl.rcParams.update({ 'font.size': 7 })
 	if covid19_country == 'ww':
 		plt.figure(figsize=(24.0, 9.0))
@@ -159,23 +188,37 @@ def plot(covid19_country, covid19_data):
 
 	plt.legend(handles=[ blue_patch, red_patch ], loc='upper left')
 
-	filename = 'images/graphics-%s.png' % covid19_country
+	filename = 'images/%s.png' % covid19_country
+	if log is True:
+		plt.yscale('log')
+		filename = 'images/%s-log.png' % covid19_country
+
 	plt.savefig(filename)
 	#plt.show()
 	plt.close('all')
 	return filename, country_name
 
-def generate_html(toc, items, url):
+def generate_html(toc, items, url, log=False):
 
 	github_url = 'https://github.com/quarantin/covid19'
 
-	fout = open('index.html.new', 'w')
+	old_name = 'index.html'
+	new_name = 'index.html.new'
+	if log:
+		old_name = 'index-log.html'
+		new_name = 'index-log.html.new'
+
+	fout = open(new_name, 'w')
 
 	fout.write('<html>\n')
 	fout.write('\t<head></head>\n')
 	fout.write('\t<body>\n')
 	fout.write('\t\t<h1>COVID-19 Geographic Distribution Worldwide</h1>\n')
 	fout.write('\t\t<div id="info">\n')
+	if log:
+		fout.write('\t\t\t[ <a href="index.html">Normal scale</a> | <b>Logarithmic scale</b> ]</br></br>\n')
+	else:
+		fout.write('\t\t\t[ <b>Normal scale</b> | <a href="index-log.html">Logarithmic scale ]</br></br>\n')
 	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (url, url))
 	fout.write('\t\t\tCode source: <a href="%s">%s</a></br>\n' % (github_url, github_url))
 	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d'))
@@ -200,17 +243,33 @@ def generate_html(toc, items, url):
 	fout.write('</html>\n')
 	fout.close()
 
-	os.rename('index.html.new', 'index.html')
+	os.rename(new_name, old_name)
+
+def process(data, log=False):
+
+	toc = []
+	items = []
+
+	for code, data in covid19_data_accu.items():
+
+		if code == 'total':
+			continue
+
+		plotfile, country = plot(code, data, log=log)
+
+		toc.append((code, country))
+
+		items.append((code, country, plotfile))
+
+	generate_html(toc, items, url + filename, log=log)
 
 if __name__ == '__main__':
-
-	import sys
 
 	url = 'https://www.ecdc.europa.eu/sites/default/files/documents/'
 	filename = 'COVID-19-geographic-disbtribution-worldwide.xlsx'
 
-	if os.path.exists(filename):
-		sys.exit(0)
+	#if os.path.exists(filename):
+	#	sys.exit(0)
 
 	images_dir = 'images/'
 	if not os.path.exists(images_dir):
@@ -224,20 +283,7 @@ if __name__ == '__main__':
 		print(traceback.format_exc())
 		sys.exit(0)
 
-	covid19_data = parse_spreadsheet(filename)
+	covid19_data, covid19_data_accu = parse_spreadsheet(filename)
 
-	toc = []
-	items = []
-
-	for code, data in covid19_data.items():
-
-		if code == 'total':
-			continue
-
-		plotfile, country = plot(code, data)
-
-		toc.append((code, country))
-
-		items.append((code, country, plotfile))
-
-	generate_html(toc, items, url + filename)
+	process(covid19_data)
+	process(covid19_data_accu, log=True)
