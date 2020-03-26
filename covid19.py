@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import traceback
 from datetime import datetime
 
 def download_spreadsheet(filename, url):
@@ -23,7 +24,14 @@ def parse_spreadsheet(filename):
 		rows = iter(sheet.values)
 		next(rows)
 		for row in rows:
-			_, day, month, year, cases, deaths, country, country_code, pop_data_2018 = row
+
+			day          = row[1]
+			month        = row[2]
+			year         = row[3]
+			cases        = row[4]
+			deaths       = row[5]
+			country      = row[6]
+			country_code = row[7]
 
 			if 'ww' not in data:
 				data['ww'] = {}
@@ -89,6 +97,7 @@ def plot(covid19_country, covid19_data):
 		if not country_name:
 			country_name = entry['country'].replace('_', ' ')
 
+	print('Parsing %s...' % country_name, file=sys.stdout)
 	mpl.rcParams.update({ 'font.size': 7 })
 	if covid19_country == 'ww':
 		plt.figure(figsize=(24.0, 9.0))
@@ -211,7 +220,8 @@ if __name__ == '__main__':
 		download_spreadsheet(filename, url)
 
 	except Exception as err:
-		print(err)
+		print(err, file=sys.stderr)
+		print(traceback.format_exc())
 		sys.exit(0)
 
 	covid19_data = parse_spreadsheet(filename)
