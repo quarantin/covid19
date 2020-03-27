@@ -70,7 +70,7 @@ def accumulate(data):
 
 	return cumul
 
-def parse_spreadsheet(filename):
+def parse_json(filename):
 
 	data = {}
 
@@ -339,7 +339,7 @@ if __name__ == '__main__':
 	if not os.path.exists(outdir):
 		os.mkdir(outdir, mode=0o755)
 
-	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
+	covid19_data, covid19_data_cumul = parse_json(filename)
 
 	os.chdir(outdir)
 
