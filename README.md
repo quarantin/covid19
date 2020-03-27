@@ -14,4 +14,5 @@ virtualenv -p python3 ENV
 pip install -r requirements.txt
 
 # Generate
-./covid19.py```
+./covid19.py
+```
