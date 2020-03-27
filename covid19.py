@@ -314,8 +314,9 @@ def process(covid19_data, log=False, debug=False):
 
 if __name__ == '__main__':
 
+	today = datetime.now().strftime('%Y-%m-%d')
 	url = 'https://www.ecdc.europa.eu/sites/default/files/documents/'
-	filename = 'COVID-19-geographic-disbtribution-worldwide.xlsx'
+	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.xlsx' % today
 
 	try:
 		status = download_spreadsheet(filename, url)
@@ -324,8 +325,7 @@ if __name__ == '__main__':
 			sys.exit(0)
 
 	except Exception as err:
-		print(err, file=sys.stderr)
-		print(traceback.format_exc(), file=sys.stderr)
+		print('File not found, quitting.', file=sys.stdout)
 		sys.exit(0)
 
 	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
