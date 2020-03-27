@@ -286,7 +286,7 @@ def generate_html(toc, url):
 	fout.write('\t\t\t<h2>Countries</h2>\n')
 
 	for code, country in toc:
-		href = '%s/%s.html' % (code[0].lower(), code)
+		href = '%s.html' % code
 		fout.write('\t\t\t<a href="%s">%s</a></br>\n' % (href, country))
 		generate_html_country(code, country)
 
@@ -338,9 +338,10 @@ if __name__ == '__main__':
 
 	if not os.path.exists(outdir):
 		os.mkdir(outdir, mode=0o755)
-	os.chdir(outdir)
 
 	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
+
+	os.chdir(outdir)
 
 	toc, items = process(covid19_data,       log=False)
 	toc, items = process(covid19_data_cumul, log=True)
