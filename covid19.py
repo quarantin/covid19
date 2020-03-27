@@ -3,13 +3,18 @@
 import os
 import sys
 import json
+import shutil
 import hashlib
+import requests
 import traceback
 from datetime import datetime
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 def download_spreadsheet(filename, url):
 
-	import requests
 	response = requests.get(url)
 	response.raise_for_status()
 
@@ -128,17 +133,9 @@ def parse_spreadsheet(filename):
 
 def plot(covid19_country, covid19_data, log=False):
 
-	import matplotlib as mpl
-	import matplotlib.pyplot as plt
-	import matplotlib.patches as mpatches
-
 	dates = []
 	cases = []
 	deaths = []
-
-	letter = covid19_country[0].lower()
-	if not os.path.exists(letter):
-		os.mkdir(letter)
 
 	max_cases = 0
 	country_name = None
@@ -222,10 +219,10 @@ def plot(covid19_country, covid19_data, log=False):
 
 	plt.legend(handles=[ blue_patch, red_patch ], loc='upper left')
 
-	filename = '%s/%s.png' % (letter, covid19_country)
+	filename = '%s.png' % covid19_country
 	if log is True:
 		plt.yscale('log')
-		filename = '%s/%s-log.png' % (letter, covid19_country)
+		filename = '%s-log.png' % covid19_country
 
 	plt.savefig(filename)
 	#plt.show()
@@ -252,10 +249,8 @@ def write_html_footer(fout):
 
 def generate_html_country(country, country_name):
 
-	letter = country[0].lower()
-
-	cur_filename = '%s/%s.html'     % (letter, country)
-	tmp_filename = '%s/%s.html.new' % (letter, country)
+	cur_filename = '%s.html'     % country
+	tmp_filename = '%s.html.new' % country
 
 	fout = open(tmp_filename, 'w')
 
@@ -326,6 +321,7 @@ def process(covid19_data, log=False, debug=False):
 
 if __name__ == '__main__':
 
+	outdir = 'html'
 	today = datetime.now().strftime('%Y-%m-%d')
 	url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
 	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.json' % today
@@ -339,6 +335,10 @@ if __name__ == '__main__':
 	except Exception as err:
 		print('File not found, quitting.', file=sys.stdout)
 		sys.exit(0)
+
+	if not os.path.exists(outdir):
+		os.mkdir(outdir, mode=0o755)
+	os.chdir(outdir)
 
 	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
 
