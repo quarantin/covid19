@@ -28,7 +28,7 @@ def download_spreadsheet(filename, url):
 	fout.close()
 
 	fout = open(filename + '.checksum', 'w')
-	fout.write('SHA512:%s' % new_checksum)
+	fout.write(new_checksum)
 	fout.close()
 
 	return True
