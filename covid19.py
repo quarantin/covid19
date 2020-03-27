@@ -266,9 +266,10 @@ def generate_html_country(country, country_name):
 
 	os.rename(tmp_filename, cur_filename)
 
-def generate_html(toc, url):
+def generate_html(toc):
 
 	github_url = 'https://github.com/quarantin/covid19'
+	source_url = 'https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide'
 
 	cur_filename = 'index.html'
 	tmp_filename = 'index.html.new'
@@ -278,7 +279,7 @@ def generate_html(toc, url):
 	write_html_header(fout, 'COVID-19 Geographic Distribution Worldwide')
 
 	fout.write('\t\t<div id="info">\n')
-	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (url, url))
+	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (source_url, source_url))
 	fout.write('\t\t\tCode source: <a href="%s">%s</a></br>\n' % (github_url, github_url))
 	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d'))
 	fout.write('\t\t</div><!-- div#info -->\n')
@@ -346,4 +347,4 @@ if __name__ == '__main__':
 	toc, items = process(covid19_data,       log=False)
 	toc, items = process(covid19_data_cumul, log=True)
 
-	generate_html(toc, url + filename)
+	generate_html(toc)
