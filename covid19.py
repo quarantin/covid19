@@ -2,6 +2,7 @@
 
 import os
 import sys
+import hashlib
 import traceback
 from datetime import datetime
 
@@ -11,9 +12,26 @@ def download_spreadsheet(filename, url):
 	response = requests.get(url + filename)
 	response.raise_for_status()
 
+	new_checksum = 'SHA512:%s' % hashlib.sha512(response.content).hexdigest()
+	try:
+		fin = open(filename + '.checksum', 'r')
+		old_checksum = fin.read()
+		fin.close()
+
+		if old_checksum == new_checksum:
+			return False
+	except:
+		pass
+
 	fout = open(filename, 'wb')
 	fout.write(response.content)
 	fout.close()
+
+	fout = open(filename + '.checksum', 'w')
+	fout.write('SHA512:%s' % new_checksum)
+	fout.close()
+
+	return True
 
 def accumulate(data):
 
@@ -300,11 +318,14 @@ if __name__ == '__main__':
 	filename = 'COVID-19-geographic-disbtribution-worldwide.xlsx'
 
 	try:
-		download_spreadsheet(filename, url)
+		status = download_spreadsheet(filename, url)
+		if not status:
+			print('No update found, quitting.', file=sys.stdout)
+			sys.exit(0)
 
 	except Exception as err:
 		print(err, file=sys.stderr)
-		print(traceback.format_exc())
+		print(traceback.format_exc(), file=sys.stderr)
 		sys.exit(0)
 
 	covid19_data, covid19_data_cumul = parse_spreadsheet(filename)
