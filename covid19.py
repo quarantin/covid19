@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import hashlib
 import traceback
 from datetime import datetime
@@ -9,7 +10,7 @@ from datetime import datetime
 def download_spreadsheet(filename, url):
 
 	import requests
-	response = requests.get(url + filename)
+	response = requests.get(url)
 	response.raise_for_status()
 
 	new_checksum = 'SHA512:%s' % hashlib.sha512(response.content).hexdigest()
@@ -47,16 +48,19 @@ def accumulate(data):
 
 		cases = 0
 		deaths = 0
+		population = 0
 
 		for date, item in sorted(country_data.items(), key=lambda x: x[0]):
 
 			cases += item['cases']
 			deaths += item['deaths']
+			population += item['population']
 
 			cumul[cc][date] = {
 				'country': item['country'],
 				'cases': cases,
 				'deaths': deaths,
+				'population': population,
 			}
 
 	return cumul
@@ -65,55 +69,60 @@ def parse_spreadsheet(filename):
 
 	data = {}
 
-	import openpyxl
-	workbook = openpyxl.load_workbook(filename)
-	for sheet in workbook:
-		rows = iter(sheet.values)
-		next(rows)
-		for row in rows:
+	fin = open(filename, 'r')
+	jsondata = json.loads(fin.read())
+	fin.close()
 
-			day     = row[1]
-			month   = row[2]
-			year    = row[3]
-			cases   = row[4]
-			deaths  = row[5]
-			country = row[6]
-			cc      = row[7]
+	for item in jsondata['records']:
 
-			if 'ww' not in data:
-				data['ww'] = {}
+		day        = int(item['day'])
+		month      = int(item['month'])
+		year       = int(item['year'])
+		cases      = int(item['cases'])
+		deaths     = int(item['deaths'])
+		country    = item['countriesAndTerritories']
+		cc         = item['geoId']
+		population = item['popData2018'] and int(item['popData2018']) or 0
 
-			cc = cc.lower()
-			if cc not in data:
-				data[cc] = {}
+		if 'ww' not in data:
+			data['ww'] = {}
 
-			date = datetime(year=int(year), month=int(month), day=int(day)).strftime('%Y-%m-%d')
-			if date not in data[cc]:
-				data[cc][date] = {
-					'country': country,
-					'cases': cases,
-					'deaths': deaths,
-				}
+		cc = cc.lower()
+		if cc not in data:
+			data[cc] = {}
 
-			if date not in data['ww']:
-				data['ww'][date] = {
-					'country': 'Worldwide',
-					'cases': 0,
-					'deaths': 0,
-				}
+		date = datetime(year=int(year), month=int(month), day=int(day)).strftime('%Y-%m-%d')
+		if date not in data[cc]:
+			data[cc][date] = {
+				'country': country,
+				'cases': cases,
+				'deaths': deaths,
+				'population': population,
+			}
 
-			data['ww'][date]['cases'] += cases
-			data['ww'][date]['deaths'] += deaths
+		if date not in data['ww']:
+			data['ww'][date] = {
+				'country': 'Worldwide',
+				'cases': 0,
+				'deaths': 0,
+				'population': 0,
+			}
 
-			if 'total' not in data:
-				data['total'] = {
-					'country': 'Total',
-					'cases': 0,
-					'deaths': 0,
-				}
+		data['ww'][date]['cases'] += cases
+		data['ww'][date]['deaths'] += deaths
+		data['ww'][date]['population'] += population
 
-			data['total']['cases'] += cases
-			data['total']['deaths'] += deaths
+		if 'total' not in data:
+			data['total'] = {
+				'country': 'Total',
+				'cases': 0,
+				'deaths': 0,
+				'population': 0,
+			}
+
+		data['total']['cases'] += cases
+		data['total']['deaths'] += deaths
+		data['total']['population'] += population
 
 	return data, accumulate(data)
 
@@ -133,6 +142,7 @@ def plot(covid19_country, covid19_data, log=False):
 
 	max_cases = 0
 	country_name = None
+	country_pop = 'Unknown'
 	for date, entry in sorted(list(covid19_data.items()), key=lambda x: x[0], reverse=False):
 
 		# Ignore days with no case and no death
@@ -147,6 +157,7 @@ def plot(covid19_country, covid19_data, log=False):
 		deaths.append(entry['deaths'])
 		if not country_name:
 			country_name = entry['country'].replace('_', ' ')
+			country_pop = entry['population']
 
 	print("Plotting %s" % country_name, file=sys.stdout)
 	mpl.rcParams.update({ 'font.size': 7 })
@@ -156,6 +167,7 @@ def plot(covid19_country, covid19_data, log=False):
 		plt.figure(figsize=(18.0, 9.0))
 
 	plt.suptitle(log and 'Cumulative' or 'Per Day', fontsize=26)
+	plt.title('Population: %s' % '{:,d}'.format(country_pop).replace(',', ' '), fontweight='bold')
 
 	plt.xlabel('Days', fontsize=20)
 	plt.ylabel('Count', fontsize=20)
@@ -315,8 +327,8 @@ def process(covid19_data, log=False, debug=False):
 if __name__ == '__main__':
 
 	today = datetime.now().strftime('%Y-%m-%d')
-	url = 'https://www.ecdc.europa.eu/sites/default/files/documents/'
-	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.xlsx' % today
+	url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
+	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.json' % today
 
 	try:
 		status = download_spreadsheet(filename, url)
