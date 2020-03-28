@@ -185,6 +185,11 @@ def plot(covid19_country, covid19_data, log=False):
 	for y in range(0, limit, step):
 		plt.axhline(y=y, color='0.65', linewidth=0.4)
 
+	filename = '%s.png' % covid19_country
+	if log is True:
+		plt.yscale('log')
+		filename = '%s-log.png' % covid19_country
+
 	cases_bar = plt.bar(dates, cases, color='blue', width=0.8, align='center')
 	deaths_bar = plt.bar(dates, deaths, color='red', width=0.6, align='center')
 
@@ -218,11 +223,6 @@ def plot(covid19_country, covid19_data, log=False):
 	blue_patch = mpatches.Patch(color='blue', label='Cases')
 
 	plt.legend(handles=[ blue_patch, red_patch ], loc='upper left')
-
-	filename = '%s.png' % covid19_country
-	if log is True:
-		plt.yscale('log')
-		filename = '%s-log.png' % covid19_country
 
 	plt.savefig(filename)
 	#plt.show()
