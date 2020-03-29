@@ -13,6 +13,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
+DEBUG = False
+
 def download(filename, url):
 
 	print('DOWNLOAD: %s' % url)
@@ -409,7 +411,11 @@ if __name__ == '__main__':
 
 	os.chdir(outdir)
 
-	toc, items = process(covid19_data,       log=False)
-	toc, items = process(covid19_data_cumul, log=True)
+	if DEBUG:
+		toc, items = process(covid19_data,       log=False, debug=True)
+
+	else:
+		toc, items = process(covid19_data,       log=False)
+		toc, items = process(covid19_data_cumul, log=True)
 
 	generate_html(toc)
