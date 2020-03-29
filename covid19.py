@@ -13,7 +13,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-def download_spreadsheet(filename, url):
+def download(filename, url):
+
+	print('DOWNLOAD: %s' % url)
 
 	response = requests.get(url)
 	response.raise_for_status()
@@ -70,6 +72,89 @@ def accumulate(data):
 
 	return cumul
 
+def extract_data(data, row):
+
+	if type(row) is tuple:
+
+		day        = int(row[1])
+		month      = int(row[2])
+		year       = int(row[3])
+		cases      = int(row[4])
+		deaths     = int(row[5])
+		country    = row[6]
+		cc         = row[7]
+		population = row[9] and int(row[9]) or 0
+
+	elif type(row) is dict:
+
+		day        = int(row['day'])
+		month      = int(row['month'])
+		year       = int(row['year'])
+		cases      = int(row['cases'])
+		deaths     = int(row['deaths'])
+		country    = row['countriesAndTerritories']
+		cc         = row['geoId']
+		population = row['popData2018'] and int(row['popData2018']) or 0
+
+	else:
+		raise Exception('Unsupported type for input: %s' % type(row))
+
+
+	if 'ww' not in data:
+		data['ww'] = {}
+
+	cc = cc.lower()
+	if cc not in data:
+		data[cc] = {}
+
+	date = datetime(year=int(year), month=int(month), day=int(day)).strftime('%Y-%m-%d')
+	if date not in data[cc]:
+		data[cc][date] = {
+			'country': country,
+			'cases': cases,
+			'deaths': deaths,
+			'population': population,
+		}
+
+	if date not in data['ww']:
+		data['ww'][date] = {
+			'country': 'Worldwide',
+			'cases': 0,
+			'deaths': 0,
+			'population': 0,
+		}
+
+	data['ww'][date]['cases'] += cases
+	data['ww'][date]['deaths'] += deaths
+	data['ww'][date]['population'] += population
+
+	if 'total' not in data:
+		data['total'] = {
+			'country': 'Total',
+			'cases': 0,
+			'deaths': 0,
+			'population': 0,
+		}
+
+	data['total']['cases'] += cases
+	data['total']['deaths'] += deaths
+	data['total']['population'] += population
+
+
+def parse_xlsx(filename):
+
+	data = {}
+
+	import openpyxl
+	workbook = openpyxl.load_workbook(filename)
+	for sheet in workbook:
+		rows = iter(sheet.values)
+		next(rows)
+		for row in rows:
+			extract_data(data, row)
+
+	return data, accumulate(data)
+
 def parse_json(filename):
 
 	data = {}
@@ -78,56 +163,8 @@ def parse_json(filename):
 	jsondata = json.loads(fin.read())
 	fin.close()
 
-	for item in jsondata['records']:
-
-		day        = int(item['day'])
-		month      = int(item['month'])
-		year       = int(item['year'])
-		cases      = int(item['cases'])
-		deaths     = int(item['deaths'])
-		country    = item['countriesAndTerritories']
-		cc         = item['geoId']
-		population = item['popData2018'] and int(item['popData2018']) or 0
-
-		if 'ww' not in data:
-			data['ww'] = {}
-
-		cc = cc.lower()
-		if cc not in data:
-			data[cc] = {}
-
-		date = datetime(year=int(year), month=int(month), day=int(day)).strftime('%Y-%m-%d')
-		if date not in data[cc]:
-			data[cc][date] = {
-				'country': country,
-				'cases': cases,
-				'deaths': deaths,
-				'population': population,
-			}
-
-		if date not in data['ww']:
-			data['ww'][date] = {
-				'country': 'Worldwide',
-				'cases': 0,
-				'deaths': 0,
-				'population': 0,
-			}
-
-		data['ww'][date]['cases'] += cases
-		data['ww'][date]['deaths'] += deaths
-		data['ww'][date]['population'] += population
-
-		if 'total' not in data:
-			data['total'] = {
-				'country': 'Total',
-				'cases': 0,
-				'deaths': 0,
-				'population': 0,
-			}
-
-		data['total']['cases'] += cases
-		data['total']['deaths'] += deaths
-		data['total']['population'] += population
+	for row in jsondata['records']:
+		extract_data(data, row)
 
 	return data, accumulate(data)
 
@@ -324,13 +361,21 @@ if __name__ == '__main__':
 
 	outdir = 'html'
 	today = datetime.now().strftime('%Y-%m-%d')
-	url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
-	filename = 'COVID-19-geographic-disbtribution-worldwide-%s.json' % today
+	filename = 'COVID-19-geographic-disbtribution-worldwide-%s' % today
+	json_url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
+	xlsx_url = 'https://www.ecdc.europa.eu/sites/default/files/documents/' + filename + '.xlsx'
 
 	try:
-		status = download_spreadsheet(filename, url)
-		if not status:
-			print('No update found, quitting.', file=sys.stdout)
+		json_status = download(filename + '.json', json_url)
+		if not json_status:
+			print('No update found for JSON.', file=sys.stdout)
+
+		xlsx_status = download(filename + '.xlsx', xlsx_url)
+		if not xlsx_status:
+			print('No update found for XLSX.', file=sys.stdout)
+
+		if not json_status and not xlsx_status:
+			print('No updates found.', file=sys.stdout)
 			sys.exit(0)
 
 	except Exception as err:
@@ -340,7 +385,21 @@ if __name__ == '__main__':
 	if not os.path.exists(outdir):
 		os.mkdir(outdir, mode=0o755)
 
-	covid19_data, covid19_data_cumul = parse_json(filename)
+	if json_status and xlsx_status:
+		covid19_data,  covid19_data_cumul  = parse_json(filename + '.json')
+		covid19_data2, covid19_data_cumul2 = parse_xlsx(filename + '.xlsx')
+
+		covid19_data.update(covid19_data2)
+		covid19_data_cumul.update(covid19_data_cumul2)
+
+	elif json_status:
+		covid19_data, covid19_data_cumul = parse_json(filename + '.json')
+
+	elif xlsx_status:
+		covid19_data, covid19_data_cumul = parse_xlsx(filename + '.xlsx')
+
+	else:
+		raise Exception('This should never happen')
 
 	os.chdir(outdir)
 
