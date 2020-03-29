@@ -286,8 +286,6 @@ def write_html_footer(fout):
 
 def generate_html_country(country, country_name):
 
-	now = datetime.now().strftime('%Y%m%d%H%M%S')
-
 	cur_filename = '%s.html'     % country
 	tmp_filename = '%s.html.new' % country
 
@@ -296,9 +294,15 @@ def generate_html_country(country, country_name):
 	for_str = country != 'ww' and 'for ' or ''
 	write_html_header(fout, 'COVID-19 Geographic Distribution %s%s' % (for_str, country_name))
 
+	png1 = '%s.png' % country
+	png2 = '%s-log.png' % country
+
+	png1_latest = os.stat(png1).st_mtime
+	png2_latest = os.stat(png2).st_mtime
+
 	fout.write('\t\t<div>\n')
-	fout.write('\t\t\t<img src="%s.png?%s"/>\n' % (country, now))
-	fout.write('\t\t\t<img src="%s-log.png?%s"/>\n' % (country, now))
+	fout.write('\t\t\t<img src="%s?%s"/>\n' % (png1, png1_latest))
+	fout.write('\t\t\t<img src="%s?%s"/>\n' % (png2, png2_latest))
 	fout.write('\t\t</div>\n')
 
 	write_html_footer(fout)
@@ -320,7 +324,7 @@ def generate_html(toc):
 	fout.write('\t\t<div id="info">\n')
 	fout.write('\t\t\tSource: <a href="%s">%s</a></br>\n' % (source_url, source_url))
 	fout.write('\t\t\tCode source: <a href="%s">%s</a></br>\n' % (github_url, github_url))
-	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d'))
+	fout.write('\t\t\tUpdated: <b>%s</b>\n' % datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 	fout.write('\t\t</div><!-- div#info -->\n')
 	fout.write('\t\t<div id="content">\n')
 	fout.write('\t\t\t<h2>Countries</h2>\n')
@@ -361,7 +365,6 @@ def process(covid19_data, log=False, debug=False):
 
 if __name__ == '__main__':
 
-	outdir = 'html'
 	today = datetime.now().strftime('%Y-%m-%d')
 	filename = 'COVID-19-geographic-disbtribution-worldwide-%s' % today
 	json_url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
@@ -384,6 +387,7 @@ if __name__ == '__main__':
 		print('File not found, quitting.', file=sys.stdout)
 		sys.exit(0)
 
+	outdir = 'html'
 	if not os.path.exists(outdir):
 		os.mkdir(outdir, mode=0o755)
 
