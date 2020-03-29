@@ -286,6 +286,8 @@ def write_html_footer(fout):
 
 def generate_html_country(country, country_name):
 
+	now = datetime.now().strftime('%Y%m%d%H%M%S')
+
 	cur_filename = '%s.html'     % country
 	tmp_filename = '%s.html.new' % country
 
@@ -295,8 +297,8 @@ def generate_html_country(country, country_name):
 	write_html_header(fout, 'COVID-19 Geographic Distribution %s%s' % (for_str, country_name))
 
 	fout.write('\t\t<div>\n')
-	fout.write('\t\t\t<img src="%s.png"/>\n' % country)
-	fout.write('\t\t\t<img src="%s-log.png"/>\n' % country)
+	fout.write('\t\t\t<img src="%s.png?%s"/>\n' % (country, now))
+	fout.write('\t\t\t<img src="%s-log.png?%s"/>\n' % (country, now))
 	fout.write('\t\t</div>\n')
 
 	write_html_footer(fout)
