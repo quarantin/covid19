@@ -299,8 +299,8 @@ def generate_html_country(country, country_name):
 	png1 = '%s.png' % country
 	png2 = '%s-log.png' % country
 
-	png1_latest = os.stat(png1).st_mtime
-	png2_latest = os.stat(png2).st_mtime
+	png1_latest = datetime.fromtimestamp(os.stat(png1).st_mtime).strftime('%Y%m%d%H%M%S')
+	png2_latest = datetime.fromtimestamp(os.stat(png2).st_mtime).strftime('%Y%m%d%H%M%S')
 
 	fout.write('\t\t<div>\n')
 	fout.write('\t\t\t<img src="%s?%s"/>\n' % (png1, png1_latest))
