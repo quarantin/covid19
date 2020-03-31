@@ -33,8 +33,12 @@ def download(filename, url):
 	except:
 		pass
 
+	data = response.content
+	if data.startswith(b'\xef\xbb\xbf'):
+		data = data[3:]
+
 	fout = open(filename, 'wb')
-	fout.write(response.content)
+	fout.write(data)
 	fout.close()
 
 	fout = open(filename + '.checksum', 'w')
