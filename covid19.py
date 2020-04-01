@@ -280,6 +280,13 @@ def write_html_header(fout, page_title):
 	fout.write('\t\t<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />\n')
 	fout.write('\t\t<meta http-equiv="Pragma" content="no-cache" />\n')
 	fout.write('\t\t<meta http-equiv="Expires" content="0" />\n')
+	fout.write('\t\t<style>\n')
+	fout.write('div.cell {\n')
+	fout.write('  width: 200px;\n')
+	fout.write('  max-width: 11%;\n')
+	fout.write('  display: table-cell;\n')
+	fout.write('}\n')
+	fout.write('\t\t</style>\n')
 	fout.write('\t</head>\n')
 	fout.write('\t<body>\n')
 	fout.write('\t\t<h1>%s</h1>\n' % page_title)
@@ -315,7 +322,24 @@ def generate_html_country(country, country_name):
 
 	os.rename(tmp_filename, cur_filename)
 
-def generate_html(toc):
+def get_country_list(countries):
+
+	lines = []
+	visited = {}
+
+	for code, country in sorted(countries, key=lambda x: x[1]):
+
+		letter = country[0].upper()
+		if letter not in visited:
+			visited[letter] = True
+			lines.append('\t\t\t\t\t</br>\n')
+			lines.append('\t\t\t\t\t<h3>%s</h3>\n' % letter)
+
+		lines.append('\t\t\t\t\t<a href="/covid19/%s.html">%s</a><br>\n' % (code, country))
+
+	return lines[1:]
+
+def generate_html(countries):
 
 	github_url = 'https://github.com/quarantin/covid19'
 	source_url = 'https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide'
@@ -335,9 +359,23 @@ def generate_html(toc):
 	fout.write('\t\t<div id="content">\n')
 	fout.write('\t\t\t<h2>Countries</h2>\n')
 
-	for code, country in toc:
-		href = '%s.html' % code
-		fout.write('\t\t\t<a href="%s">%s</a></br>\n' % (href, country))
+	fout.write('\t\t\t<div style="display: table-row">\n')
+
+	i = 0
+	lines = get_country_list(countries)
+	for line in lines:
+
+		if i % 30 == 0:
+			if i != 0:
+				fout.write('\t\t\t\t</div><!-- div.cell -->\n')
+			fout.write('\t\t\t\t<div class="cell">\n')
+
+		fout.write(line)
+		i += 1
+
+	fout.write('\t\t\t</div><!-- div.table-row -->\n')
+
+	for code, country in countries:
 		generate_html_country(code, country)
 
 	fout.write('\t\t</div><!-- div#content -->\n')
