@@ -22,7 +22,11 @@ def download(filename, url):
 	response = requests.get(url)
 	response.raise_for_status()
 
-	new_checksum = 'SHA512:%s' % hashlib.sha512(response.content).hexdigest()
+	data = response.content
+	if data.startswith(b'\xef\xbb\xbf'):
+		data = data[3:]
+
+	new_checksum = 'SHA512:%s' % hashlib.sha512(data).hexdigest()
 	try:
 		fin = open(filename + '.checksum', 'r')
 		old_checksum = fin.read()
@@ -32,10 +36,6 @@ def download(filename, url):
 			return False
 	except:
 		pass
-
-	data = response.content
-	if data.startswith(b'\xef\xbb\xbf'):
-		data = data[3:]
 
 	fout = open(filename, 'wb')
 	fout.write(data)
