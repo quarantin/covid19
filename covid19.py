@@ -422,6 +422,8 @@ if __name__ == '__main__':
 	json_url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
 	xlsx_url = 'https://www.ecdc.europa.eu/sites/default/files/documents/' + filename + '.xlsx'
 
+	json_status, xlsx_status = False, False
+
 	try:
 		json_status = download(filename + '.json', json_url)
 		if not json_status:
