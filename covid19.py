@@ -15,6 +15,10 @@ import matplotlib.patches as mpatches
 
 DEBUG = False
 
+ENCODING_ERRORS = {
+	'Ã§a': 'ç',
+}
+
 def download(filename, url):
 
 	print('DOWNLOAD: %s' % url)
@@ -328,6 +332,10 @@ def get_country_list(countries):
 	visited = {}
 
 	for code, country in sorted(countries, key=lambda x: x[1]):
+
+		for error, replace in ENCODING_ERRORS.items():
+			if error in country:
+				country = country.replace(error, replace)
 
 		letter = country[0].upper()
 		if letter not in visited:
