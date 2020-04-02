@@ -436,8 +436,10 @@ if __name__ == '__main__':
 			sys.exit(0)
 
 	except Exception as err:
-		print('File not found, quitting.', file=sys.stdout)
-		sys.exit(0)
+
+		if not json_status and not xlsx_status:
+			print('File not found, quitting.', file=sys.stdout)
+			sys.exit(0)
 
 	outdir = 'html'
 	if not os.path.exists(outdir):
