@@ -155,7 +155,11 @@ def generate_html_country(daily, cumul, template_file='templates/country.html'):
 
 	template = read_file(template_file)
 
-	template = template.replace('COUNTRY',      country_daily)
+	prefix = cc_daily != ww and 'for ' or ''
+
+	country = '%s%s' % (prefix, country_daily.replace('_', ' '))
+
+	template = template.replace('COUNTRY',      country)
 	template = template.replace('LABELS',       ','.join(labels_daily))
 	template = template.replace('CASES_DAILY',  ','.join(cases_daily))
 	template = template.replace('DEATHS_DAILY', ','.join(deaths_daily))
