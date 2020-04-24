@@ -2,5 +2,5 @@
 
 ROOT="$(dirname "$(readlink "${0}" || echo "${0}")")"
 cd "${ROOT}"
-. ENV/bin/activate
+. env/bin/activate
 ./covid19.py
