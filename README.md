@@ -1,5 +1,6 @@
-# Covid19
-COVID-19 Geographic Distribution Worldwide
+# COVID-19 Geographic Distribution Worldwide
+Data comes from the European Centre for Disease Prevention and Control:  
+https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
 
 # Demo
 http://zeroday.biz/covid19/
