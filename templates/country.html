@@ -23,16 +23,30 @@
 						data: [ CASES_DAILY ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
-						borderWidth: 1
+						borderWidth: 1,
 					},
 					{
 						label: 'Number of deaths',
 						data: [ DEATHS_DAILY ],
 						backgroundColor: 'rgba(235, 54, 54, 0.2)',
 						borderColor: 'rgba(235, 54, 54, 1)',
-						borderWidth: 1
-					}
-				]
+						borderWidth: 1,
+					},
+					{
+						label: 'Cases trend (DAYS days)',
+						data: [ CASES_TREND ],
+						backgroundColor: 'rgba(54, 162, 255, 0.2)',
+						borderColor: 'rgba(54, 162, 255, 1)',
+						type: 'line',
+					},
+					{
+						label: 'Deaths trend (DAYS days)',
+						data: [ DEATHS_TREND ],
+						backgroundColor: 'rgba(255, 54, 54, 0.2)',
+						borderColor: 'rgba(255, 54, 54, 1)',
+						type: 'line',
+					},
+				],
 			},
 			options: {
 				title: {
@@ -42,11 +56,11 @@
 				scales: {
 					yAxes: [{
 						ticks: {
-							beginAtZero: true
-						}
-					}]
-				}
-			}
+							beginAtZero: true,
+						},
+					}],
+				},
+			},
 		});
 
 		var ctx_cumul = document.getElementById('canvas-cumul').getContext('2d');
@@ -60,16 +74,30 @@
 						data: [ CASES_CUMUL ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
-						borderWidth: 1
+						borderWidth: 1,
 					},
 					{
 						label: 'Number of deaths',
 						data: [ DEATHS_CUMUL ],
 						backgroundColor: 'rgba(235, 54, 54, 0.2)',
 						borderColor: 'rgba(235, 54, 54, 1)',
-						borderWidth: 1
+						borderWidth: 1,
 			
-					}
+					},
+					{
+						label: 'Cases trend (DAYS days)',
+						data: [ CASES_TREND ],
+						backgroundColor: 'rgba(54, 162, 255, 0.2)',
+						borderColor: 'rgba(54, 162, 255, 1)',
+						type: 'line',
+					},
+					{
+						label: 'Deaths trend (DAYS days)',
+						data: [ DEATHS_TREND ],
+						backgroundColor: 'rgba(255, 54, 54, 0.2)',
+						borderColor: 'rgba(255, 54, 54, 1)',
+						type: 'line',
+					},
 				],
 			},
 			options: {
@@ -81,11 +109,11 @@
 					yAxes: [{
 						type: 'logarithmic',
 						ticks: {
-							beginAtZero: true
-						}
-					}]
-				}
-			}
+							beginAtZero: true,
+						},
+					}],
+				},
+			},
 		});
 
 		</script>

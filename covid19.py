@@ -7,6 +7,7 @@ import hashlib
 import requests
 import traceback
 from datetime import datetime
+from collections import deque
 
 # Worldwide
 ww = 'WW'
@@ -146,12 +147,29 @@ def generate_country_cumul(daily):
 
 	return country_code, country_name, labels, cases, deaths
 
+""" Generate trend data to use with Chart.js.
+"""
+def generate_trend(cases, days=5):
+
+	trend = [ '0' ] * days
+	stack = deque(maxlen=days)
+
+	for case in cases:
+		if len(stack) == days:
+			trend.append(str(sum(stack) / days))
+		stack.append(int(case))
+
+	return trend
+
 """ Generate HTML file for country.
 """
-def generate_html_country(daily, cumul, template_file='templates/country.html'):
+def generate_html_country(daily, cumul, template_file='templates/country.html', days=5):
 
 	cc_daily, country_daily, labels_daily, cases_daily, deaths_daily = generate_country_daily(daily)
 	cc_cumul, country_cumul, labels_cumul, cases_cumul, deaths_cumul = generate_country_cumul(cumul)
+
+	cases_trend = generate_trend(cases_daily, days=days)
+	deaths_trend = generate_trend(deaths_daily, days=days)
 
 	template = read_file(template_file)
 
@@ -165,6 +183,9 @@ def generate_html_country(daily, cumul, template_file='templates/country.html'):
 	template = template.replace('DEATHS_DAILY', ','.join(deaths_daily))
 	template = template.replace('CASES_CUMUL',  ','.join(cases_cumul))
 	template = template.replace('DEATHS_CUMUL', ','.join(deaths_cumul))
+	template = template.replace('CASES_TREND',  ','.join(cases_trend))
+	template = template.replace('DEATHS_TREND', ','.join(deaths_trend))
+	template = template.replace('DAYS',         str(days))
 
 	filepath = '%s/%s.html' % (htmldir, cc_daily.lower())
 	write_file(filepath, template)
@@ -181,14 +202,14 @@ def generate_html_index(ccs, template_file='templates/index.html'):
 
 """ Generate all HTML files.
 """
-def generate_html(jsonfile):
+def generate_html(jsonfile, days=5):
 
 	dataset = parse_json(jsonfile)
 	daily   = parse_daily(dataset)
 	cumul   = parse_cumulative(daily)
 
 	for cc in daily:
-		generate_html_country(daily[cc], cumul[cc])
+		generate_html_country(daily[cc], cumul[cc], days=days)
 
 	generate_html_index(list(daily))
 
@@ -228,6 +249,8 @@ def download(filename, url):
 """
 def main():
 
+	days = 5
+
 	mkdir(jsondir)
 	mkdir(htmldir)
 
@@ -245,7 +268,7 @@ def main():
 		pass
 
 	if json_status or '-f' in sys.argv or '--force' in sys.argv:
-		generate_html(filepath + '.json')
+		generate_html(filepath + '.json', days=days)
 
 	else:
 		print('Data already up-to-date, quitting.', file=sys.stdout)
