@@ -59,12 +59,12 @@ def parse_daily(dataset):
 		month = record['month']
 		day   = record['day']
 
-		country_code = record['geoId']
+		cc = record['geoId']
 
 		date = '%s/%02d/%02d' % (year, int(month), int(day))
 
-		if country_code not in daily:
-			daily[country_code] = {}
+		if cc not in daily:
+			daily[cc] = {}
 
 		if date not in daily[ww]:
 			daily[ww][date] = {
@@ -74,9 +74,12 @@ def parse_daily(dataset):
 				'deaths': 0,
 			}
 
-		daily[country_code][date] = record
-		daily[ww][date]['cases'] += int(record['cases'])
-		daily[ww][date]['deaths'] += int(record['deaths'])
+		for key in [ 'cases', 'deaths' ]:
+			record[key] = abs(int(record[key]))
+
+		daily[cc][date] = record
+		daily[ww][date]['cases']  += record['cases']
+		daily[ww][date]['deaths'] += record['deaths']
 
 	return daily
 
@@ -92,8 +95,8 @@ def parse_cumulative(daily):
 		cumul_deaths = 0
 
 		for date, record in sorted(data.items()):
-			cumul_cases += int(record['cases'])
-			cumul_deaths += int(record['deaths'])
+			cumul_cases += record['cases']
+			cumul_deaths += record['deaths']
 			if cc not in cumul:
 				cumul[cc] = {}
 
@@ -149,15 +152,15 @@ def generate_country_cumul(daily):
 
 """ Generate trend data to use with Chart.js.
 """
-def generate_trend(cases, days=5):
+def generate_trend(values, days=5):
 
 	trend = [ '0' ] * days
 	stack = deque(maxlen=days)
 
-	for case in cases:
+	for value in values:
 		if len(stack) == days:
 			trend.append(str(sum(stack) / days))
-		stack.append(int(case))
+		stack.append(int(value))
 
 	return trend
 
@@ -168,7 +171,7 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 	cc_daily, country_daily, labels_daily, cases_daily, deaths_daily = generate_country_daily(daily)
 	cc_cumul, country_cumul, labels_cumul, cases_cumul, deaths_cumul = generate_country_cumul(cumul)
 
-	cases_trend = generate_trend(cases_daily, days=days)
+	cases_trend  = generate_trend(cases_daily,  days=days)
 	deaths_trend = generate_trend(deaths_daily, days=days)
 
 	template = read_file(template_file)
@@ -265,7 +268,6 @@ def main():
 	except Exception as err:
 		print(err)
 		print(traceback.format_exc())
-		pass
 
 	if json_status or '-f' in sys.argv or '--force' in sys.argv:
 		generate_html(filepath + '.json', days=days)
