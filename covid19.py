@@ -17,6 +17,10 @@ htmldir = 'html'
 
 json_url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/json/'
 
+country_errors = {
+	'Cote_dIvoire': 'Côte_d\'Ivoire',
+}
+
 """ Create specified folder if needed.
 """
 def mkdir(dirpath):
@@ -177,6 +181,9 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 	template = read_file(template_file)
 
 	prefix = cc_daily != ww and 'for ' or ''
+
+	if country_daily in country_errors:
+		country_daily = country_errors[country_daily]
 
 	country = '%s%s' % (prefix, country_daily.replace('_', ' '))
 
