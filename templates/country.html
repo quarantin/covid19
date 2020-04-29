@@ -19,28 +19,28 @@
 				labels: [ LABELS ],
 				datasets: [
 					{
-						label: 'Number of cases',
+						label: 'Cases',
 						data: [ CASES_DAILY ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
 						borderWidth: 1,
 					},
 					{
-						label: 'Number of deaths',
-						data: [ DEATHS_DAILY ],
-						backgroundColor: 'rgba(235, 54, 54, 0.2)',
-						borderColor: 'rgba(235, 54, 54, 1)',
-						borderWidth: 1,
-					},
-					{
-						label: 'Cases trend (DAYS days)',
+						label: 'DAYS days moving average',
 						data: [ CASES_TREND ],
 						backgroundColor: 'rgba(54, 162, 255, 0.2)',
 						borderColor: 'rgba(54, 162, 255, 1)',
 						type: 'line',
 					},
 					{
-						label: 'Deaths trend (DAYS days)',
+						label: 'Deaths\n',
+						data: [ DEATHS_DAILY ],
+						backgroundColor: 'rgba(235, 54, 54, 0.2)',
+						borderColor: 'rgba(235, 54, 54, 1)',
+						borderWidth: 1,
+					},
+					{
+						label: 'DAYS days moving average',
 						data: [ DEATHS_TREND ],
 						backgroundColor: 'rgba(255, 54, 54, 0.2)',
 						borderColor: 'rgba(255, 54, 54, 1)',
@@ -70,29 +70,28 @@
 				labels: [ LABELS ],
 				datasets: [
 					{
-						label: 'Number of cases',
+						label: 'Cases',
 						data: [ CASES_CUMUL ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
 						borderWidth: 1,
 					},
 					{
-						label: 'Number of deaths',
-						data: [ DEATHS_CUMUL ],
-						backgroundColor: 'rgba(235, 54, 54, 0.2)',
-						borderColor: 'rgba(235, 54, 54, 1)',
-						borderWidth: 1,
-			
-					},
-					{
-						label: 'Cases trend (DAYS days)',
+						label: 'Cases (DAYS days moving average)',
 						data: [ CASES_TREND ],
 						backgroundColor: 'rgba(54, 162, 255, 0.2)',
 						borderColor: 'rgba(54, 162, 255, 1)',
 						type: 'line',
 					},
 					{
-						label: 'Deaths trend (DAYS days)',
+						label: 'Deaths\n',
+						data: [ DEATHS_CUMUL ],
+						backgroundColor: 'rgba(235, 54, 54, 0.2)',
+						borderColor: 'rgba(235, 54, 54, 1)',
+						borderWidth: 1,
+					},
+					{
+						label: 'Deaths (DAYS days moving average)',
 						data: [ DEATHS_TREND ],
 						backgroundColor: 'rgba(255, 54, 54, 0.2)',
 						borderColor: 'rgba(255, 54, 54, 1)',
@@ -113,7 +112,7 @@
 						},
 					}],
 				},
-			},
+			}
 		});
 
 		</script>
