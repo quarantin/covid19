@@ -175,8 +175,11 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 	cc_daily, country_daily, labels_daily, cases_daily, deaths_daily = generate_country_daily(daily)
 	cc_cumul, country_cumul, labels_cumul, cases_cumul, deaths_cumul = generate_country_cumul(cumul)
 
-	cases_trend  = generate_trend(cases_daily,  days=days)
-	deaths_trend = generate_trend(deaths_daily, days=days)
+	cases_daily_trend  = generate_trend(cases_daily,  days=days)
+	deaths_daily_trend = generate_trend(deaths_daily, days=days)
+
+	cases_cumul_trend  = generate_trend(cases_cumul,  days=days)
+	deaths_cumul_trend = generate_trend(deaths_cumul, days=days)
 
 	template = read_file(template_file)
 
@@ -187,15 +190,18 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 
 	country = '%s%s' % (prefix, country_daily.replace('_', ' '))
 
-	template = template.replace('COUNTRY',      country)
-	template = template.replace('LABELS',       ','.join(labels_daily))
-	template = template.replace('CASES_DAILY',  ','.join(cases_daily))
-	template = template.replace('DEATHS_DAILY', ','.join(deaths_daily))
-	template = template.replace('CASES_CUMUL',  ','.join(cases_cumul))
-	template = template.replace('DEATHS_CUMUL', ','.join(deaths_cumul))
-	template = template.replace('CASES_TREND',  ','.join(cases_trend))
-	template = template.replace('DEATHS_TREND', ','.join(deaths_trend))
-	template = template.replace('DAYS',         str(days))
+	template = template.replace('CASES_CUMUL_TREND',   ','.join(cases_cumul_trend))
+	template = template.replace('CASES_CUMUL_VALUES',  ','.join(cases_cumul))
+	template = template.replace('CASES_DAILY_TREND',   ','.join(cases_daily_trend))
+	template = template.replace('CASES_DAILY_VALUES',  ','.join(cases_daily))
+	template = template.replace('COUNTRY',             country)
+	template = template.replace('DAYS',                str(days))
+	template = template.replace('DEATHS_CUMUL_TREND',  ','.join(deaths_cumul_trend))
+	template = template.replace('DEATHS_CUMUL_VALUES', ','.join(deaths_cumul))
+	template = template.replace('DEATHS_DAILY_TREND',  ','.join(deaths_daily_trend))
+	template = template.replace('DEATHS_DAILY_VALUES', ','.join(deaths_daily))
+	template = template.replace('LABELS_DAILY',        ','.join(labels_daily))
+	template = template.replace('LABELS_CUMUL',        ','.join(labels_cumul))
 
 	filepath = '%s/%s.html' % (htmldir, cc_daily.lower())
 	write_file(filepath, template)

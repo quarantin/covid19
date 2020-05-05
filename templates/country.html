@@ -16,32 +16,32 @@
 		var canvas_daily = new Chart(ctx_daily, {
 			type: 'bar',
 			data: {
-				labels: [ LABELS ],
+				labels: [ LABELS_DAILY ],
 				datasets: [
 					{
 						label: 'Cases',
-						data: [ CASES_DAILY ],
+						data: [ CASES_DAILY_VALUES ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
 						borderWidth: 1,
 					},
 					{
 						label: 'DAYS days moving average',
-						data: [ CASES_TREND ],
+						data: [ CASES_DAILY_TREND ],
 						backgroundColor: 'rgba(54, 162, 255, 0.2)',
 						borderColor: 'rgba(54, 162, 255, 1)',
 						type: 'line',
 					},
 					{
 						label: 'Deaths\n',
-						data: [ DEATHS_DAILY ],
+						data: [ DEATHS_DAILY_VALUES ],
 						backgroundColor: 'rgba(235, 54, 54, 0.2)',
 						borderColor: 'rgba(235, 54, 54, 1)',
 						borderWidth: 1,
 					},
 					{
 						label: 'DAYS days moving average',
-						data: [ DEATHS_TREND ],
+						data: [ DEATHS_DAILY_TREND ],
 						backgroundColor: 'rgba(255, 54, 54, 0.2)',
 						borderColor: 'rgba(255, 54, 54, 1)',
 						type: 'line',
@@ -67,32 +67,32 @@
 		var canvas_cumul = new Chart(ctx_cumul, {
 			type: 'bar',
 			data: {
-				labels: [ LABELS ],
+				labels: [ LABELS_CUMUL ],
 				datasets: [
 					{
 						label: 'Cases',
-						data: [ CASES_CUMUL ],
+						data: [ CASES_CUMUL_VALUES ],
 						backgroundColor: 'rgba(54, 162, 235, 0.2)',
 						borderColor: 'rgba(54, 162, 235, 1)',
 						borderWidth: 1,
 					},
 					{
 						label: 'DAYS days moving average',
-						data: [ CASES_TREND ],
+						data: [ CASES_CUMUL_TREND ],
 						backgroundColor: 'rgba(54, 162, 255, 0.2)',
 						borderColor: 'rgba(54, 162, 255, 1)',
 						type: 'line',
 					},
 					{
 						label: 'Deaths\n',
-						data: [ DEATHS_CUMUL ],
+						data: [ DEATHS_CUMUL_VALUES ],
 						backgroundColor: 'rgba(235, 54, 54, 0.2)',
 						borderColor: 'rgba(235, 54, 54, 1)',
 						borderWidth: 1,
 					},
 					{
 						label: 'DAYS days moving average',
-						data: [ DEATHS_TREND ],
+						data: [ DEATHS_CUMUL_TREND ],
 						backgroundColor: 'rgba(255, 54, 54, 0.2)',
 						borderColor: 'rgba(255, 54, 54, 1)',
 						type: 'line',
