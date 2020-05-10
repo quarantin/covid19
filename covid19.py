@@ -155,7 +155,6 @@ def generate_country_cumul(daily):
 	return country_code, country_name, labels, cases, deaths
 
 """ Generate trend data to use with Chart.js.
-"""
 def generate_trend(values, days=5):
 
 	trend = [ '0' ] * days
@@ -167,16 +166,14 @@ def generate_trend(values, days=5):
 		stack.append(int(value))
 
 	return trend
+"""
 
 """ Generate HTML file for country.
 """
-def generate_html_country(daily, cumul, template_file='templates/country.html', days=5):
+def generate_html_country(daily, cumul, template_file='templates/country.html'):
 
 	cc_daily, country_daily, labels_daily, cases_daily, deaths_daily = generate_country_daily(daily)
 	cc_cumul, country_cumul, labels_cumul, cases_cumul, deaths_cumul = generate_country_cumul(cumul)
-
-	cases_daily_trend  = generate_trend(cases_daily,  days=days)
-	deaths_daily_trend = generate_trend(deaths_daily, days=days)
 
 	template = read_file(template_file)
 
@@ -188,10 +185,6 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 	country = '%s%s' % (prefix, country_daily.replace('_', ' '))
 
 	template = template.replace('COUNTRY',             country)
-	template = template.replace('DAYS',                str(days))
-
-	template = template.replace('CASES_DAILY_TREND',   ','.join(cases_daily_trend))
-	template = template.replace('DEATHS_DAILY_TREND',  ','.join(deaths_daily_trend))
 
 	template = template.replace('CASES_CUMUL_VALUES',  ','.join(cases_cumul))
 	template = template.replace('DEATHS_CUMUL_VALUES', ','.join(deaths_cumul))
@@ -199,8 +192,8 @@ def generate_html_country(daily, cumul, template_file='templates/country.html', 
 	template = template.replace('CASES_DAILY_VALUES',  ','.join(cases_daily))
 	template = template.replace('DEATHS_DAILY_VALUES', ','.join(deaths_daily))
 
-	template = template.replace('LABELS_DAILY',        ','.join(labels_daily))
-	template = template.replace('LABELS_CUMUL',        ','.join(labels_cumul))
+	template = template.replace('LABELS_DAILY',        ','.join(labels_daily).replace('"', ''))
+	template = template.replace('LABELS_CUMUL',        ','.join(labels_cumul).replace('"', ''))
 
 	filepath = '%s/%s.html' % (htmldir, cc_daily.lower())
 	write_file(filepath, template)
@@ -217,14 +210,14 @@ def generate_html_index(ccs, template_file='templates/index.html'):
 
 """ Generate all HTML files.
 """
-def generate_html(jsonfile, days=5):
+def generate_html(jsonfile):
 
 	dataset = parse_json(jsonfile)
 	daily   = parse_daily(dataset)
 	cumul   = parse_cumulative(daily)
 
 	for cc in daily:
-		generate_html_country(daily[cc], cumul[cc], days=days)
+		generate_html_country(daily[cc], cumul[cc])
 
 	generate_html_index(list(daily))
 
@@ -264,10 +257,11 @@ def download(filename, url):
 """
 def main():
 
-	days = 5
-
 	mkdir(jsondir)
 	mkdir(htmldir)
+
+	import shutil
+	shutil.copy('templates/charts.js', htmldir)
 
 	today = datetime.now().strftime('%Y%m%d')
 	filepath = '%s/%s' % (jsondir, today)
@@ -282,7 +276,7 @@ def main():
 		print(traceback.format_exc())
 
 	if json_status or '-f' in sys.argv or '--force' in sys.argv:
-		generate_html(filepath + '.json', days=days)
+		generate_html(filepath + '.json')
 
 	else:
 		print('Data already up-to-date, quitting.', file=sys.stdout)
