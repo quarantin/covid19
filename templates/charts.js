@@ -15,13 +15,33 @@ class MovingAverage {
 		return this._store.reduce((a, b) => a + b, 0);
 	}
 
+
 	average() {
-
-		//var sum = 0;
-		//for (var i = 0; i < this._store.length; i++)
-		//	sum += this._store[i];
-
 		return this.sum() / this._days;
+	}
+
+	weighted_average() {
+
+		var sum = 0;
+		var days = 0;
+
+		var weight = 1;
+		var half = Math.ceil(this._store.length / 2)
+
+		for (var i = 0; i < this._store.length; i++) {
+
+			var item = this._store[i];
+
+			sum += item * weight
+			days += weight
+
+			if (i >= half)
+				weight -= 1;
+			else
+				weight += 1;
+		}
+
+		return sum / days;
 	}
 
 	get full() {
@@ -44,7 +64,7 @@ function generate_trend(values, win, shift) {
 	for (var i = 0; i < values.length; i++) {
 
 		if (stack.full)
-			trend.push(stack.average());
+			trend.push(stack.weighted_average());
 
 		stack.push(values[i]);
 	}
