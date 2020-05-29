@@ -72,13 +72,16 @@ function generate_trend(values, win, shift) {
 	return trend;
 }
 
-function generate_chart(type, title, win, shift, scale, average) {
+function generate_chart(type, title, win, shift, scale) {
 
 	var label = win + ' days moving average';
 
 	var cases = input2array(type + '-cases');
 	var deaths = input2array(type + '-deaths');
 	var labels = input2array(type + '-labels');
+
+	var daily_cases = input2array('daily-cases');
+	var daily_deaths = input2array('daily-deaths');
 
 	var datasets = [];
 
@@ -90,14 +93,13 @@ function generate_chart(type, title, win, shift, scale, average) {
 		borderWidth: 1,
 	});
 
-	if (average == true)
-		datasets.push({
-			label: label,
-			data: generate_trend(cases, win, shift),
-			backgroundColor: 'rgba(54, 162, 255, 0.2)',
-			borderColor: 'rgba(54, 162, 255, 1)',
-			type: 'line',
-		});
+	datasets.push({
+		label: label,
+		data: generate_trend(daily_cases, win, shift),
+		backgroundColor: 'rgba(54, 162, 255, 0.2)',
+		borderColor: 'rgba(54, 162, 255, 1)',
+		type: 'line',
+	});
 
 	datasets.push({
 		label: 'Deaths',
@@ -107,14 +109,13 @@ function generate_chart(type, title, win, shift, scale, average) {
 		borderWidth: 1,
 	});
 
-	if (average == true)
-		datasets.push({
-			label: label,
-			data: generate_trend(deaths, win, shift),
-			backgroundColor: 'rgba(255, 54, 54, 0.2)',
-			borderColor: 'rgba(255, 54, 54, 1)',
-			type: 'line',
-		});
+	datasets.push({
+		label: label,
+		data: generate_trend(daily_deaths, win, shift),
+		backgroundColor: 'rgba(255, 54, 54, 0.2)',
+		borderColor: 'rgba(255, 54, 54, 1)',
+		type: 'line',
+	});
 
 	var ctx = document.getElementById(type + '-canvas').getContext('2d');
 	var canvas = new Chart(ctx, {
@@ -143,6 +144,6 @@ function generate_chart(type, title, win, shift, scale, average) {
 function generateCharts() {
 	var win = parseInt(document.getElementById('window').value);
 	var shift = parseInt(document.getElementById('shift').value);
-	generate_chart('daily', 'Daily',      win, shift, 'linear',      true);
-	generate_chart('cumul', 'Cumulative', win, shift, 'logarithmic', false);
+	generate_chart('daily', 'Daily',      win, shift, 'linear');
+	generate_chart('cumul', 'Cumulative', win, shift, 'logarithmic');
 }
