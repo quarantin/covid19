@@ -72,7 +72,23 @@ function generate_trend(values, win, shift) {
 	return trend;
 }
 
-function generate_chart(type, title, win, shift, scale) {
+function get_window() {
+
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+
+	var win = urlParams.get('window');
+	if (!win)
+		win = 5;
+
+	alert(win);
+	return win;
+}
+
+function generate_chart(type, title, scale) {
+
+	var win = get_window();
+	var shift = Math.ceil(win / 2);
 
 	var label = win + ' days moving average';
 
@@ -142,8 +158,6 @@ function generate_chart(type, title, win, shift, scale) {
 }
 
 function generateCharts() {
-	var win = parseInt(document.getElementById('window').value);
-	var shift = parseInt(document.getElementById('shift').value);
-	generate_chart('daily', 'Daily',      win, shift, 'linear');
-	generate_chart('cumul', 'Cumulative', win, shift, 'logarithmic');
+	generate_chart('daily', 'Daily',      'linear');
+	generate_chart('cumul', 'Cumulative', 'logarithmic');
 }
