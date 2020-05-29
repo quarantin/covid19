@@ -81,7 +81,6 @@ function get_window() {
 	if (!win)
 		win = 5;
 
-	alert(win);
 	return win;
 }
 
