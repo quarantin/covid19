@@ -10,17 +10,6 @@
 	<body>
 		<h1>COVID-19 Trends COUNTRY</h1>
 		<div>
-			<label for="shift">Shift moving average by </label>
-			<input id="shift" type="text" value="3" size="1"> days
-		</div>
-		<div>
-			<label for="window">Moving average window is </label>
-			<input id="window" type="text" value="5" size="1"> days
-		</div>
-		<div>
-			<button type="button" onclick="generateCharts()">Refresh</button>
-		</div>
-		<div>
 			<canvas id="daily-canvas" width="1600" height="800"></canvas>
 			<input type="hidden" id="daily-cases" value="CASES_DAILY_VALUES">
 			<input type="hidden" id="daily-deaths" value="DEATHS_DAILY_VALUES">
