@@ -59,9 +59,11 @@ def parse_daily(dataset):
 
 	for record in dataset['records']:
 
-		year  = record['year']
-		month = record['month']
-		day   = record['day']
+		date = record['dateRep'].split('/')
+
+		day   = date[0]
+		month = date[1]
+		year  = date[2]
 
 		cc = record['geoId']
 
@@ -74,16 +76,16 @@ def parse_daily(dataset):
 			daily[ww][date] = {
 				'geoId': ww,
 				'countriesAndTerritories': 'Worldwide',
-				'cases': 0,
-				'deaths': 0,
+				'cases_weekly': 0,
+				'deaths_weekly': 0,
 			}
 
-		for key in [ 'cases', 'deaths' ]:
+		for key in [ 'cases_weekly', 'deaths_weekly' ]:
 			record[key] = abs(int(record[key]))
 
 		daily[cc][date] = record
-		daily[ww][date]['cases']  += record['cases']
-		daily[ww][date]['deaths'] += record['deaths']
+		daily[ww][date]['cases_weekly']  += record['cases_weekly']
+		daily[ww][date]['deaths_weekly'] += record['deaths_weekly']
 
 	return daily
 
@@ -99,8 +101,8 @@ def parse_cumulative(daily):
 		cumul_deaths = 0
 
 		for date, record in sorted(data.items()):
-			cumul_cases += record['cases']
-			cumul_deaths += record['deaths']
+			cumul_cases += record['cases_weekly']
+			cumul_deaths += record['deaths_weekly']
 			if cc not in cumul:
 				cumul[cc] = {}
 
@@ -125,8 +127,8 @@ def generate_country_daily(dataset):
 		country_name = record['countriesAndTerritories']
 
 		labels.append('"%s"' % date)
-		cases.append(str(record['cases']))
-		deaths.append(str(record['deaths']))
+		cases.append(str(record['cases_weekly']))
+		deaths.append(str(record['deaths_weekly']))
 
 	return country_code, country_name, labels, cases, deaths
 
