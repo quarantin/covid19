@@ -225,9 +225,6 @@ def generate_html(jsonfile):
 """
 def download(filename, url):
 
-	if os.path.exists(filename):
-		return
-
 	response = requests.get(url)
 	response.raise_for_status()
 
