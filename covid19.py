@@ -225,6 +225,9 @@ def generate_html(jsonfile):
 """
 def download(filename, url):
 
+	if os.path.exists(filename):
+		return
+
 	response = requests.get(url)
 	response.raise_for_status()
 
@@ -234,24 +237,9 @@ def download(filename, url):
 	if data.startswith(b'\xef\xbb\xbf'):
 		data = data[3:]
 
-	# Compute new checksum
-	new_checksum = 'SHA512:%s' % hashlib.sha512(data).hexdigest()
-
-	checkfile = filename + '.checksum'
-	if os.path.exists(checkfile):
-		old_checksum = read_file(checkfile)
-		if old_checksum == new_checksum:
-			return False
-
 	fout = open(filename, 'wb')
 	fout.write(data)
 	fout.close()
-
-	fout = open(filename + '.checksum', 'w')
-	fout.write(new_checksum)
-	fout.close()
-
-	return True
 
 """ Main entry point.
 """
@@ -264,19 +252,18 @@ def main():
 	shutil.copy('templates/charts.js', htmldir)
 
 	today = datetime.now().strftime('%Y%m%d')
-	filepath = '%s/%s' % (jsondir, today)
-
-	json_status = False
+	filepath = '%s/%s.json' % (jsondir, today)
 
 	try:
-		json_status = download(filepath + '.json', json_url)
+		if not os.path.exists(filepath):
+			download(filepath, json_url)
 
 	except Exception as err:
 		print(err)
 		print(traceback.format_exc())
 
-	if json_status or '-f' in sys.argv or '--force' in sys.argv:
-		generate_html(filepath + '.json')
+	if '-f' in sys.argv or '--force' in sys.argv:
+		generate_html(filepath)
 
 	else:
 		print('Data already up-to-date, quitting.', file=sys.stdout)
